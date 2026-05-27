@@ -2,9 +2,13 @@ import styles from "./App.module.css";
 import { Header } from "./components/Header";
 
 export default function App() {
+  function handleRestartGame() {
+    alert("Testando");
+  }
+
   return (
     <div className={styles.container}>
-      <Header />
+      <Header current={5} max={10} onRestart={handleRestartGame} />
     </div>
   );
 }
