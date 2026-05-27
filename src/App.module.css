@@ -18,6 +18,12 @@
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
 }
 
+main h4 {
+  margin-bottom: 0.6rem;
+  color: #32325f;
+  font-weight: 600;
+}
+
 .word {
   width: 100%;
   display: flex;
@@ -25,4 +31,9 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin: 2.5rem 0;
+}
+
+.guess {
+  display: flex;
+  gap: 0.7rem;
 }
