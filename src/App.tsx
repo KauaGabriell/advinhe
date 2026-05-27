@@ -1,7 +1,10 @@
+import styles from "./App.module.css";
+import { Header } from "./components/Header";
+
 export default function App() {
   return (
-    <div>
-      <h1>Hello Word</h1>
+    <div className={styles.container}>
+      <Header />
     </div>
   );
 }
