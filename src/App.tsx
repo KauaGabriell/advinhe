@@ -11,13 +11,9 @@ import { type Challenge, WORDS } from "./utils/words";
 
 export default function App() {
   const [attempts, setAttempts] = useState(0);
-  const [letterUsed] = useState<LetterUsedProps[]>([]);
-  const [_letter, setLetter] = useState("");
+  const [letterUsed, setLetterUsed] = useState<LetterUsedProps[]>([]);
+  const [letter, setLetter] = useState("");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
-
-  function handleRestartGame() {
-    alert("Testando");
-  }
 
   function startGame() {
     const index = Math.floor(Math.random() * WORDS.length);
@@ -28,11 +24,33 @@ export default function App() {
     setLetter("");
   }
 
-  function handleConfirm() {}
+  function handleRestartGame() {
+    startGame();
+  }
+
+  function handleConfirm() {
+    if (!challenge) return null;
+
+    if (!letter.trim()) {
+      return alert("Insira uma Letra");
+    }
+
+    const value = letter.toUpperCase();
+    const exists = letterUsed.find((used) => used.value === value);
+    if (exists) return alert("Você já usou essa letra");
+
+    setLetterUsed((prevState) => [...prevState, { value, correct: false }]);
+    setLetter("");
+  }
 
   useEffect(() => {
-    startGame();
-  });
+    const index = Math.floor(Math.random() * WORDS.length);
+    const randomWord = WORDS[index];
+
+    setChallenge(randomWord);
+    setAttempts(0);
+    setLetter("");
+  }, []);
 
   if (!challenge) return null;
 
@@ -60,6 +78,7 @@ export default function App() {
             autoFocus
             maxLength={1}
             placeholder="?"
+            value={letter}
             onChange={(e) => setLetter(e.target.value)}
           />
           <Button title="Confirmar" onClick={handleConfirm} />
