@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./App.module.css";
 import { Button } from "./components/Button";
 import { Header } from "./components/Header";
@@ -9,21 +9,23 @@ import type { LetterUsedProps } from "./components/LettersUsed/LetterUsed";
 import { Tip } from "./components/Tip";
 import { type Challenge, WORDS } from "./utils/words";
 
+const ATTEMPTS_MARGIN = 3;
 export default function App() {
   const [score, setScore] = useState(0);
-  const [attempts, setAttempts] = useState(0);
   const [letterUsed, setLetterUsed] = useState<LetterUsedProps[]>([]);
   const [letter, setLetter] = useState("");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
-  function startGame() {
+  const startGame = useCallback(() => {
     const index = Math.floor(Math.random() * WORDS.length);
     const randomWord = WORDS[index];
 
     setChallenge(randomWord);
-    setAttempts(0);
+
+    setScore(0);
     setLetter("");
-  }
+    setLetterUsed([]);
+  }, []);
 
   function handleRestartGame() {
     startGame();
@@ -53,33 +55,71 @@ export default function App() {
     setLetter("");
   }
 
-  useEffect(() => {
-    const index = Math.floor(Math.random() * WORDS.length);
-    const randomWord = WORDS[index];
+  const endGame = useCallback(
+    (message: string) => {
+      alert(message);
+      startGame();
+    },
+    [startGame],
+  );
 
-    setChallenge(randomWord);
-    setAttempts(0);
-    setLetter("");
-  }, []);
+  useEffect(() => {
+    startGame();
+  }, [startGame]);
+
+  useEffect(() => {
+    if (!challenge) return;
+
+    const timeoutId = setTimeout(() => {
+      if (score === challenge.word.length) {
+        endGame("Parabéns, você descobriu a palavra");
+        return;
+      }
+
+      const attemptLimit = challenge.word.length + ATTEMPTS_MARGIN;
+
+      if (letterUsed.length === attemptLimit) {
+        endGame("Que Pena! Você usou todas as tentativas");
+      }
+    }, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [challenge, score, letterUsed.length, endGame]);
 
   if (!challenge) return null;
 
   const letters = Array.from(
-    { length: challenge.word.length },
-    (_, position) => ({
+    challenge.word.toUpperCase(),
+    (value, position) => ({
       id: `${challenge.id}-${position}`,
+      value,
     }),
   );
 
   return (
     <div className={styles.container}>
       <main>
-        <Header current={attempts} max={10} onRestart={handleRestartGame} />
+        <Header
+          current={letterUsed.length}
+          max={challenge.word.length + ATTEMPTS_MARGIN}
+          onRestart={handleRestartGame}
+        />
         <Tip tip={challenge.tip} />
+
         <div className={styles.word}>
-          {letters.map((letter) => (
-            <Letter key={letter.id} value="" />
-          ))}
+          {letters.map((currentLetter) => {
+            const used = letterUsed.find(
+              (usedLetter) => usedLetter.value === currentLetter.value,
+            );
+
+            return (
+              <Letter
+                key={currentLetter.id}
+                value={used?.correct ? currentLetter.value : ""}
+                state={used?.correct ? "correct" : "default"}
+              />
+            );
+          })}
         </div>
 
         <h4>Palpite</h4>
